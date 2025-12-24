@@ -1,0 +1,159 @@
+// Assuming the necessary includes are present:
+#include "language/de_DE.h"
+#include "config.h"
+#include "dnd.h"
+#include "led.h"
+
+void Grid::setTime(int hour, int minute) {
+    Serial.printf("GRID::SETTIME (Top): Raw Hour received: %d\n", hour);
+    Serial.printf("GRID::SETTIME (Top): Raw Minute received: %d\n", minute);
+
+    // Safety check for uninitialized time
+    if(hour == -1 || minute == -1) {
+        return;
+    }
+
+    // --- 2. DND CHECK (Do Not Disturb) ---
+    if(DND::active(hour, minute)) {
+        Serial.println("GRID::SETTIME: DND is ACTIVE. Clearing display and returning."); // <--- DEBUG 5
+        // Clear the word clock LEDs and show
+        for(int i = 0; i < NUM_LEDS; i++) {
+            Led::ids[i].setRGB(0, 0, 0);
+        }
+        // Clear the Halo LEDs (assuming this no longer calls FastLED.show())
+        Led::clearHaloLeds();
+        
+        noInterrupts(); // Deaktiviert Interrupts
+        FastLED.show(); // Führt die zeitkritische LED-Übertragung aus
+        interrupts();   // Reaktiviert Interrupts
+
+        return; 
+    }
+
+    // --- 3. CORE WORD CLOCK LOGIC (Determine Word Indices) ---
+    
+    Serial.println("GRID::SETTIME: Starting LED drawing loop."); // <--- DEBUG 6
+    
+    int singleMinute = minute % 5;
+    
+    // Snap minute to 5-minute blocks
+    int minute_block = (minute - (minute % 5));
+    int displayHour = hour; // Start with the current hour
+
+    // CRITICAL: Increment the hour for display when past "25 after" (or 5 vor halb)
+    if(minute_block >= 25) { 
+        displayHour += 1;
+    }
+
+    int minute_word_index = minute_block / 5; // Index for time_minutes array (0-11)
+    displayHour = displayHour % 12;           // Index for time_hours array (0-11)
+
+    // Optional debug for word indices:
+    Serial.printf("GRID::SETTIME: Calculated indices: Minute Index=%d, Display Hour=%d\n", minute_word_index, displayHour);
+
+    // Special case for 'ein' vs 'eins' (1 o'clock): only 3 LEDs for "eins" if it's exactly 1 o'clock (index 0)
+    int hourLimit = (displayHour == 1 && minute_word_index == 0) ? 3 : 6;
+    
+    // --- 4. DRAWING LOOP ---
+    
+    // A. Reset all LEDs to dimmed background color
+    for(int i = 0; i < NUM_LEDS; i++) {
+        Led::ids[i].setRGB(
+            (uint8_t)Config::color_bg.r * Config::brightness,
+            (uint8_t)Config::color_bg.g * Config::brightness,
+            (uint8_t)Config::color_bg.b * Config::brightness
+        );
+    }
+
+    // B. ES IST (Always lit)
+    for (int i = 0; i < 5; i++) {
+        if (Grid_de_DE::time_it_is[i] >= 0) {
+            Led::ids[Led::getLedId(Grid_de_DE::time_it_is[i])].setRGB(
+                (uint8_t)Config::color_fg.r * Config::brightness,
+                (uint8_t)Config::color_fg.g * Config::brightness,
+                (uint8_t)Config::color_fg.b * Config::brightness
+            );
+        }
+    }
+
+    // C. Minuten-Wörter
+    for (int m = 0; m < 12; m++) {
+        if (Grid_de_DE::time_minutes[minute_word_index][m] >= 0) {
+            Led::ids[Led::getLedId(Grid_de_DE::time_minutes[minute_word_index][m])].setRGB(
+                (uint8_t)Config::color_fg.r * Config::brightness,
+                (uint8_t)Config::color_fg.g * Config::brightness,
+                (uint8_t)Config::color_fg.b * Config::brightness
+            );
+        }
+    }
+
+    // D. Stunden-Wörter
+    for (int h = 0; h < hourLimit; h++) {
+        if (Grid_de_DE::time_hours[displayHour][h] >= 0) {
+            Led::ids[Led::getLedId(Grid_de_DE::time_hours[displayHour][h])].setRGB(
+                (uint8_t)Config::color_fg.r * Config::brightness,
+                (uint8_t)Config::color_fg.g * Config::brightness,
+                (uint8_t)Config::color_fg.b * Config::brightness
+            );
+        }
+    }
+
+    // E. Einzeln-Minuten (Dots)
+    if (singleMinute > 0) {
+        if (GRID_SINGLE_MINUTES == 1) { // Minutes placed at the end of the LED strip
+            for (int s = (NUM_LEDS - 4); s < (NUM_LEDS - 4 + singleMinute); s++) {
+                Led::ids[s].setRGB(
+                    (uint8_t)Config::color_fg.r * Config::brightness,
+                    (uint8_t)Config::color_fg.g * Config::brightness,
+                    (uint8_t)Config::color_fg.b * Config::brightness
+                );
+            }
+        } else { // Minutes placed at the beginning of the LED strip
+            for (int s = 0; s < singleMinute; s++) {
+                Led::ids[s].setRGB(
+                    (uint8_t)Config::color_fg.r * Config::brightness,
+                    (uint8_t)Config::color_fg.g * Config::brightness,
+                    (uint8_t)Config::color_fg.b * Config::brightness
+                );
+            }
+        }
+    }
+
+    Serial.printf("GRID::SETTIME: Brightness=%.2f, FG Color R=%d G=%d B=%d\n", 
+                  Config::brightness, 
+                  (int)(Config::color_fg.r), 
+                  (int)(Config::color_fg.g), 
+                  (int)(Config::color_fg.b));
+
+    // Finally, push the updated LED data to the strip
+    
+    
+    int max_attempts = 5;
+    for (int i = 0; i < max_attempts; i++) {
+    
+    // 1. Interrupts deaktivieren
+    noInterrupts();
+    FastLED.show(); 
+    interrupts(); 
+    
+    // 2. Prüfen Sie, ob es der letzte Versuch war
+    if (i < max_attempts - 1) {
+        // Geben Sie dem ESP-System Zeit für Wartungsarbeiten (WiFi, NTP)
+        // bevor Sie es erneut unterbrechen.
+        yield(); // Gibt Zeit für den System-Scheduler (besser als delay(0))
+    }
+    
+    // Da wir keine Success-Methode haben, brechen wir nach dem ersten Versuch ab,
+    // wenn wir zuversichtlich sind, dass die Interrupts das Problem waren.
+    // **Wenn die Interrupt-Sicherung (Fix 1) funktioniert, wird nur ein Durchlauf ausgeführt.**
+    
+    // Wenn Fix 1 fehlschlägt, wird die Schleife 5 Mal ausgeführt, was die Wahrscheinlichkeit 
+    // eines erfolgreichen Sendevorgangs drastisch erhöht.
+    
+    // WENN Fix 1 funktioniert: Wir brechen nach dem ersten Durchlauf ab, da es erfolgreich war.
+    break; 
+}
+
+    Serial.println("GRID::SETTIME: FastLED.show() called, Interrupts reaktiviert.");
+    Serial.println("GRID::SETTIME: FastLED.show() called. Update complete."); // <--- DEBUG 7
+}
