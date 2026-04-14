@@ -1,3 +1,22 @@
+KHK: 14.4.26
+
+I had to modify the code because DST was no longer working.
+
+Reason: the source originally used, http://worldtimeapi.org/api/ip, was no longer reliably accessible.
+
+I modified utcOffset.cpp and am now using http://ip-api.com.
+
+Unfortunately, I was then unable to compile the project. 
+
+Reason: the FastLED library
+
+Gemini explained (I did not check whether it is true!):
+
+"FastLED recently updated their internal "timing traits" to be more efficient, and they chose variable names (T1L, etc.) that the ESP8266 developers also used for hardware timer names years ago."
+
+You have to use an older version of FastLED. I can only successfully compile this project now using the FastLED 3.6 library!
+
+
 KHK: 16.12.2025
 
 Major rewrite of the code changes I made. My code version from Dez 1st was not stable. 
