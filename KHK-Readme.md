@@ -19,8 +19,9 @@ Rewrite of the firmware (branch refactor-2026), see README.md for the details:
 - After a power cut the clock no longer hangs in the WiFi setup hotspot.
 
 Note: the FastLED folder in ~/sketchbook/libraries was a broken mix of 3.6.0 and a
-newer version (on turbo, hal and fury). Repaired on 27.10.2026, the broken folder is
-in ~/sketchbook/libraries-Backup-2026-10-27/.
+newer version (on turbo, hal and fury). Repaired on 27.10.2026. On the same day the whole Arduino environment was
+set up fresh (IDE 2.3.10, FastLED is no longer installed); the broken folder is in
+~/sketchbook-old-archive-2026-10-27_to-be-deleted.tar.gz.
 
 
 KHK: 14.4.26
