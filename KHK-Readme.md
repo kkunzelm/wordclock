@@ -1,3 +1,28 @@
+KHK: 27.10.2026
+
+Rewrite of the firmware (branch refactor-2026), see README.md for the details:
+
+- Daylight saving time no longer depends on any web service (worldtimeapi.org,
+  ip-api.com). The ESP8266 core computes it from the POSIX TZ rule
+  "CET-1CEST,M3.5.0,M10.5.0/3". If the EU abolishes the change of time, choose
+  "MEZ fest" or "MESZ fest" in the web UI.
+- Adafruit_NeoPixel instead of FastLED. It disables interrupts while sending, which
+  is what the noInterrupts() construct of 16.12.2025 tried to do. FastLED is no
+  longer needed, so the FastLED version problem of 14.4.26 is gone too.
+- The web page is sent from flash instead of being built as a 13 KB String
+  (that caused the truncated page in Nov 2025).
+- Settings that are 0 or "off" survive a restart now. The settings moved from SPIFFS
+  to LittleFS: after the first update all settings have to be entered once again.
+- Firmware updates over WiFi (Arduino IDE, port "wordclock"). No more unplugging
+  the halo to flash over USB.
+- http://wordclock.local works now (mDNS).
+- After a power cut the clock no longer hangs in the WiFi setup hotspot.
+
+Note: the FastLED folder in ~/sketchbook/libraries was a broken mix of 3.6.0 and a
+newer version (on turbo, hal and fury). Repaired on 27.10.2026, the broken folder is
+in ~/sketchbook/libraries-Backup-2026-10-27/.
+
+
 KHK: 14.4.26
 
 I had to modify the code because DST was no longer working.
