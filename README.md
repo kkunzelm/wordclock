@@ -15,8 +15,8 @@ In 2025/2026 the code was rewritten (halo, IP display, built-in time zone rules,
 new web UI, Adafruit_NeoPixel instead of FastLED) and no longer tries to stay
 close to the original. Changes are not offered back upstream, and changes from
 upstream are not merged in. The repository stays on GitHub
-(github.com/kkunzelm/wordclock) and is to be detached from the fork network of
-the original.
+(github.com/kkunzelm/wordclock) and was detached from the fork network of the
+original in October 2026.
 The original MIT license and copyright notice are kept in `LICENSE`.
 
 ## Requirements
