@@ -1,8 +1,10 @@
-#include "de_DE_round.h"
+// German front plate. Numbers are LED positions in reading order
+// (row * GRID_COLS + col), -1 = unused.
 
-int Grid_de_DE_round::time_it_is[5] = {0, 1, 3, 4, 5}; // es ist
+#include <stdint.h>
 
-int Grid_de_DE_round::time_minutes[12][12] = {
+#ifndef LAYOUT_MINUTES
+constexpr int8_t LAYOUT_MINUTES[12][12] = {
   {107, 108, 109,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1}, // uhr
   {  7,   8,   9,  10,  35,  36,  37,  38,  -1,  -1,  -1,  -1}, // fünf nach
   { 11,  12,  13,  14,  35,  36,  37,  38,  -1,  -1,  -1,  -1}, // zehn nach
@@ -16,8 +18,12 @@ int Grid_de_DE_round::time_minutes[12][12] = {
   { 11,  12,  13,  14,  39,  40,  41,  -1,  -1,  -1,  -1,  -1}, // zehn vor
   {  7,   8,   9,  10,  39,  40,  41,  -1,  -1,  -1,  -1,  -1}  // fünf vor
 };
+#define LAYOUT_MINUTES LAYOUT_MINUTES
+#endif
 
-int Grid_de_DE_round::time_hours[12][6] = {
+constexpr int8_t LAYOUT_IT_IS[] = {0, 1, 3, 4, 5}; // es ist
+
+constexpr int8_t LAYOUT_HOURS[12][6] = {
   { 49,  50,  51,  52,  53,  -1}, // zwölf
   { 57,  58,  59,  60,  -1,  -1}, // eins
   { 55,  56,  57,  58,  -1,  -1}, // zwei
@@ -31,3 +37,6 @@ int Grid_de_DE_round::time_hours[12][6] = {
   { 93,  94,  95,  96,  -1,  -1}, // zehn
   { 77,  78,  79,  -1,  -1,  -1}  // elf
 };
+
+// "ES IST EIN UHR": only the first three letters of EINS
+#define LAYOUT_EIN_LENGTH 3
