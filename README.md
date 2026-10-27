@@ -21,10 +21,10 @@ The original MIT license and copyright notice are kept in `LICENSE`.
 
 ## Requirements
 
-Arduino IDE with the ESP8266 core (tested with 3.1.2), board "LOLIN(WEMOS) D1 R2 & mini",
+Arduino IDE 2 (tested with 2.3.10) with the ESP8266 core (tested with 3.1.2), board "LOLIN(WEMOS) D1 R2 & mini",
 and these libraries from the library manager:
 
-* [Adafruit NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) (tested 1.15.4)
+* [Adafruit NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) (tested 1.15.5)
 * [WiFiManager](https://github.com/tzapu/WiFiManager) by tzapu (tested 2.0.17)
 * [ArduinoJson](https://arduinojson.org) version 7 (tested 7.4.3)
 
