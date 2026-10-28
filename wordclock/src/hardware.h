@@ -5,7 +5,7 @@
 
 #include "../user_config.h"
 
-#define WORDCLOCK_VERSION "2026.10"
+#define WORDCLOCK_VERSION "2026.10.1"
 #define WORDCLOCK_HOSTNAME "wordclock"
 
 constexpr uint16_t GRID_LEDS = GRID_ROWS * GRID_COLS;

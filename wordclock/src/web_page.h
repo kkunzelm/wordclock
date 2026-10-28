@@ -12,10 +12,11 @@ static const char INDEX_HTML[] PROGMEM = R"html(<!DOCTYPE html>
 <style>
 body{font-family:system-ui,sans-serif;background:#eee;color:#333;max-width:32em;margin:0 auto;padding:1em}
 h1{color:#3d72a8;font-size:1.4em}h1 small{font-weight:normal;color:#777}
-fieldset{border:0;background:#fff;border-radius:8px;margin:0 0 1em;padding:.6em 1em}
+fieldset{min-width:0;border:0;background:#fff;border-radius:8px;margin:0 0 1em;padding:.6em 1em}
 legend{font-weight:bold;color:#3d72a8;padding:0;float:left;width:100%}
 label{display:flex;align-items:center;gap:.8em;margin:.7em 0;clear:both}
 label>span{flex:0 0 9em}label>input:not([type=checkbox]),label>select{flex:1;min-width:0;font:inherit}
+label>input.hex{flex:0 0 6.5em;font-family:monospace}
 output{flex:0 0 3em;text-align:right}p{color:#777;font-size:.85em;margin:.3em 0}
 button{font:inherit;background:#3d72a8;color:#fff;border:0;border-radius:6px;padding:.7em 1.2em}
 .danger{background:#a83d3d}#msg{margin-left:1em}
@@ -60,7 +61,17 @@ button{font:inherit;background:#3d72a8;color:#fff;border:0;border-radius:6px;pad
 </fieldset>
 <script>
 const f=document.getElementById('f'),$=id=>document.getElementById(id);
-function outputs(){for(const r of f.querySelectorAll('input[type=range]'))r.nextElementSibling.value=r.value+' %';}
+const colors=f.querySelectorAll('input[type=color]');
+// Text field next to each colour: exact values as #rrggbb or r,g,b
+// (the native colour dialog on phones offers no input for that).
+for(const c of colors){const h=c.hex=document.createElement('input');
+ h.className='hex';h.placeholder='#rrggbb';h.maxLength=11;h.spellcheck=false;h.autocapitalize='off';c.after(h);
+ h.oninput=()=>{const v=h.value.trim(),m=v.match(/^(\d{1,3})\D+(\d{1,3})\D+(\d{1,3})$/);
+  if(m&&m.slice(1).every(x=>x<256))c.value='#'+m.slice(1).map(x=>(+x).toString(16).padStart(2,'0')).join('');
+  else if(/^#?[0-9a-f]{6}$/i.test(v))c.value=(v[0]=='#'?v:'#'+v).toLowerCase();};
+ h.onblur=()=>h.value=c.value;}
+function outputs(){for(const r of f.querySelectorAll('input[type=range]'))r.nextElementSibling.value=r.value+' %';
+ for(const c of colors)if(document.activeElement!=c.hex)c.hex.value=c.value;}
 function show(c){
  for(const el of f.elements){if(!(el.name in c))continue;
   if(el.type=='checkbox')el.checked=c[el.name];else el.value=c[el.name];}
